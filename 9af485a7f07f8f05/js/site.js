@@ -4,7 +4,8 @@
  const kind=document.body.dataset.trade,brand=document.body.dataset.brand,business=(document.body.dataset.business||'').toLowerCase();
  let ctx=null,enabled=!reduce.matches;
  const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
- const hero=$('.hero'),art=$('.hero-art',hero),quickbar=$('.handyman-quickbar');
+ const hero=$('.hero'),art=$('.hero-art',hero),quickbar=null;
+ const mobileMenu=$('.mobile-menu');if(mobileMenu){mobileMenu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>mobileMenu.open=false));document.addEventListener('keydown',e=>{if(e.key==='Escape')mobileMenu.open=false})}
  // The selector labels and target anchors come from actual content, not invented service names.
  const services=$$('.service');
  $$('.tool-cutout',hero).forEach((tool,i)=>{const service=services[i];if(service){tool.href='#'+service.id;tool.setAttribute('aria-label',service.querySelector('h3').textContent.trim());const slot=$(`[data-dock="${i}"]`);if(slot)slot.textContent=service.querySelector('h3').textContent.trim()}});
@@ -13,32 +14,35 @@
   root.classList.add('js');gsap.registerPlugin(ScrollTrigger);ScrollTrigger.config({ignoreMobileResize:true});
   ctx=gsap.context((self)=>{
    const mobile=innerWidth<761;
-   const longStory=['handyman','roofing','hvac','tree-service'].includes(kind);
+   const longStory=['handyman','roofing','hvac','tree-service','landscape'].includes(kind);
    hero.style.setProperty('--pin-offset',mobile?Math.max(0,hero.offsetHeight-innerHeight)+'px':'0px');
-   const tl=gsap.timeline({defaults:{ease:'none'},scrollTrigger:{id:'hero-story',trigger:hero,start:mobile?'bottom bottom':'top top',end:()=>'+='+innerHeight*(mobile?(longStory?1.15:.9):(longStory?1.7:1.25)),pin:true,scrub:.65,invalidateOnRefresh:true,onUpdate:s=>hero.style.setProperty('--progress',(10+s.progress*90)+'%')}});
+   const tl=gsap.timeline({defaults:{ease:'none'},scrollTrigger:{id:'hero-story',trigger:hero,start:()=>hero.offsetHeight>innerHeight+20?'bottom bottom':'top top',end:()=>'+='+innerHeight*(mobile?(longStory?1.15:.9):(longStory?1.7:1.25)),pin:true,scrub:.65,invalidateOnRefresh:true,onUpdate:s=>hero.style.setProperty('--progress',(10+s.progress*90)+'%')}});
+
+   const riser=$('.plumbing-continuation');
+   if(riser){const paths=$$('path',riser),pipe=$('.page-water',riser),link=$('.hero-riser',hero),left=business==='lakeside plumbing services llc';function fitPipe(){const main=riser.parentElement,height=main.offsetHeight,spacer=hero.parentElement,from=spacer.classList.contains('pin-spacer')?spacer.offsetTop+spacer.offsetHeight:hero.offsetTop+hero.offsetHeight,x=innerWidth<761?6:18;const d='M'+x+' '+Math.max(0,from-1)+'V'+(height-40);paths.forEach(p=>p.setAttribute('d',d));riser.querySelector('svg').setAttribute('viewBox','0 0 '+(innerWidth<761?13:39)+' '+height);if(link){const scene=business==='water heater specialists llc'?$('.plumbing-heater .scene',hero):$('.plumbing-general .scene',hero),pt=scene.createSVGPoint();pt.x=left?-50:810;pt.y=left?655:380;const pos=pt.matrixTransform(scene.getScreenCTM()),r=hero.getBoundingClientRect(),tx=left?(innerWidth<761?8:31):innerWidth-(innerWidth<761?8:31),ty=Math.max(160,Math.min(hero.offsetHeight-80,pos.y-r.top));link.setAttribute('viewBox','0 0 '+innerWidth+' '+hero.offsetHeight);$$('path',link).forEach(p=>p.setAttribute('d','M'+tx+' '+ty+'V'+hero.offsetHeight))}}fitPipe();ScrollTrigger.addEventListener('refresh',fitPipe);self.add(()=>()=>ScrollTrigger.removeEventListener('refresh',fitPipe));gsap.fromTo(pipe,{strokeDashoffset:0},{strokeDashoffset:-450,ease:'none',scrollTrigger:{trigger:riser.parentElement,start:'top top',end:'bottom bottom',scrub:.5}})}
    const story=$('.scene-story i',hero);if(story)tl.fromTo(story,{scaleX:.08},{scaleX:1,duration:1},0);
    // Keep the business identity and calling action readable throughout the scene.
    tl.to($('.hero-copy',hero),{y:mobile?-8:-24,duration:1},0);
    if(kind==='handyman'){
-    const items=$$('.tool-cutout',hero),slots=$$('.dock-slot',hero),dock=$('.tool-dock',hero);
-    const rotations=[-17,8,18],targets=[];
-    function measure(){
-     const saved=items.map(el=>({x:gsap.getProperty(el,'x'),y:gsap.getProperty(el,'y'),scale:gsap.getProperty(el,'scale'),rotation:gsap.getProperty(el,'rotation')}));
-     gsap.set(items,{x:0,y:0,scale:1,rotation:0});
-     items.forEach((el,i)=>{const a=el.getBoundingClientRect(),b=slots[i].getBoundingClientRect();const height=mobile?57:72;targets[i]={x:(mobile?b.left+b.width/2:b.left+29)-(a.left+a.width/2),y:(mobile?b.top+31:b.top+b.height/2)-(a.top+a.height/2),scale:height/a.height}});
-     items.forEach((el,i)=>gsap.set(el,saved[i]));
-    }
-    measure();ScrollTrigger.addEventListener('refreshInit',measure);
-    items.forEach((el,i)=>{
-     tl.fromTo(el,{x:0,y:0,scale:1,rotation:rotations[i]},{x:()=>targets[i].x,y:()=>targets[i].y,scale:()=>targets[i].scale,rotation:0,duration:.64,ease:'power2.inOut'},.13+i*.075);
-    });
-    tl.fromTo(dock,{opacity:0,y:-12},{opacity:1,y:0,duration:.2},.56);
-    tl.to($$('.stage-caption,.stage-registration,.tool-stage-grid,.tool-stage-orbit',hero),{opacity:0,duration:.25},.22);
-    if(mobile)tl.to($('.hero-copy',hero),{autoAlpha:0,duration:.22},.12);
-    tl.fromTo($('.tool-outcome',hero),{y:65,autoAlpha:0},{y:mobile?-220:0,autoAlpha:1,duration:.3,ease:'power2.out'},.66);
-    if(quickbar){tl.fromTo(quickbar,{autoAlpha:0,pointerEvents:'none'},{autoAlpha:1,pointerEvents:'auto',duration:.06},.92);tl.to(items,{autoAlpha:0,duration:.06},.92);tl.to(dock,{opacity:0,duration:.06},.92)}
-    // ctx.revert() does not own global refresh listeners.
-    self.add(()=>()=>ScrollTrigger.removeEventListener('refreshInit',measure));
+    const hammer=$('.hammer-cutout',hero),drill=$('.drill-cutout',hero),roller=$('.roller-cutout',hero),wall=$('.project-wall',hero);
+    tl.to(wall,{opacity:1,duration:.2},.05);
+    tl.to($('.tool-stage-grid',hero),{opacity:.15,duration:.2},.05);
+    tl.to(hammer,{xPercent:105,yPercent:18,scale:.38,rotation:-32,duration:.27,ease:'power2.inOut'},.03);
+    tl.to(drill,{xPercent:60,yPercent:10,scale:.42,rotation:-10,duration:.25,ease:'power2.inOut'},.03);
+    tl.to(roller,{xPercent:-120,yPercent:0,scale:.48,rotation:-12,duration:.24,ease:'power2.inOut'},.02);
+    tl.fromTo($('.wall-paint',hero),{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)',duration:.3},.24);
+    tl.to(roller,{xPercent:-20,yPercent:6,duration:.3},.24);
+    tl.to($('.wall-crack',hero),{opacity:0,duration:.1},.4);
+    tl.fromTo($('.shelf-install',hero),{y:65,opacity:0},{y:0,opacity:1,duration:.22,ease:'power2.out'},.47);
+    tl.to(drill,{xPercent:40,yPercent:13,rotation:-17,duration:.1},.57);
+    tl.to(drill,{xPercent:50,yPercent:14,rotation:-10,duration:.08},.67);
+    tl.fromTo($('.frame-install',hero),{y:35,rotation:-6,svgOrigin:'315 284',opacity:0},{y:0,rotation:0,opacity:1,duration:.17,ease:'power2.out'},.62);
+    tl.to(hammer,{rotation:-12,duration:.06},.69);tl.to(hammer,{rotation:-32,duration:.06},.75);
+    tl.fromTo($('.finish-objects',hero),{y:22,opacity:0},{y:0,opacity:1,duration:.16},.79);
+    tl.to(hammer,{xPercent:-10,yPercent:60,scale:.31,rotation:-38,duration:.18},.82);
+    tl.to(drill,{xPercent:32,yPercent:44,scale:.32,rotation:0,duration:.18},.82);
+    tl.to(roller,{xPercent:25,yPercent:57,scale:.33,rotation:25,duration:.18},.82);
+    tl.to($('.stage-caption',hero),{opacity:0,duration:.15},.75);
    }else if(kind==='roofing'){
     roofStory(tl,art);
    }else if(kind==='plumber'&&brand==='WH'&&business==='water heater specialists llc'){
@@ -73,14 +77,12 @@
     tl.to($$('.air-line',home),{strokeDashoffset:-150,duration:.6},.4);
     tl.to(hero,{backgroundImage:'linear-gradient(115deg,var(--paper) 38%,#e0decc 68%,#d5b18d)',duration:1},0);
    }else if(kind==='landscape'){
-    $$('.growing-tree',hero).forEach((el,i)=>tl.from(el,{scaleY:.35,opacity:.15,y:'+=110',duration:.7,ease:'power2.out'},.12+i*.06));
-    tl.from($$('.grass,.flower',hero),{scaleY:.1,opacity:.1,transformOrigin:'50% 100%',stagger:.006,duration:.55},.38);
-    const sun=$('.garden-sun',hero);if(sun)tl.fromTo(sun,{x:120,y:80},{x:-130,y:-60,duration:1},0);
+    gardenStory(tl,art);
    }else if(kind==='tree-service'){
-    const canopy=$('.hero-art>.scene',hero),rings=$('.tree-section',hero);
-    tl.to(canopy,{scale:.82,xPercent:10,yPercent:-12,transformOrigin:'75% 70%',duration:.8},.1);
-    tl.fromTo(rings,{scale:.5,opacity:0,y:80},{scale:1,opacity:1,y:0,duration:.6,ease:'power2.out'},.35);
-    $$('.growth-ring',rings).forEach((p,i)=>{const n=p.getTotalLength();tl.fromTo(p,{strokeDasharray:n,strokeDashoffset:n},{strokeDashoffset:0,duration:.3},.48+i*.015)});
+    const trace=$('.tree-trace',hero),n=trace.getTotalLength();
+    tl.fromTo(trace,{strokeDasharray:n,strokeDashoffset:n},{strokeDashoffset:0,duration:.85},.08);
+    tl.fromTo($$('.tree-callout',hero),{opacity:0},{opacity:1,stagger:.24,duration:.22},.15);
+    tl.fromTo($('.tree-crown',hero),{opacity:.7},{opacity:1,duration:.9},.05);
    }else if(kind==='cleaning'){
     const before=$('.clean-before',hero),blade=$('.squeegee',hero);
     tl.fromTo(before,{clipPath:'inset(0 0 0 0)'},{clipPath:'inset(0 0 0 100%)',duration:.9},.03);
@@ -101,12 +103,20 @@
    if(kind==='plumber')gsap.to('.water-fill',{top:'15%',ease:'none',scrollTrigger:{trigger:feature,start:'top 75%',end:'bottom 40%',scrub:1}});
    if(kind==='electric')gsap.fromTo($$('.switch',detail),{opacity:.3},{opacity:1,stagger:.2,scrollTrigger:{trigger:feature,start:'top 70%',end:'bottom 85%',scrub:1}});
    if(kind==='hvac')gsap.fromTo($$('.warm-room',detail),{fill:'#b8d3d5'},{fill:'#e8bb83',stagger:.15,scrollTrigger:{trigger:feature,start:'top 70%',end:'bottom 60%',scrub:1}});
-   if(kind==='landscape'||kind==='tree-service')gsap.from($$('.growing-tree',detail),{opacity:.4,y:'+=65',stagger:.1,scrollTrigger:{trigger:feature,start:'top 80%',end:'bottom 90%',scrub:1}});
+   if(kind==='landscape'){const ft=gsap.timeline({scrollTrigger:{trigger:feature,start:'top 80%',end:'bottom 70%',scrub:.7}});gardenStory(ft,detail)}
    if(kind==='cleaning'||kind==='handyman')gsap.fromTo($('.room-furniture',detail),{y:65,opacity:.4},{y:0,opacity:1,scrollTrigger:{trigger:feature,start:'top 70%',end:'bottom 90%',scrub:1}});
    if(kind==='pressure-washing')gsap.fromTo($('.clean-wall',detail),{opacity:.15},{opacity:1,scrollTrigger:{trigger:feature,start:'top 80%',end:'bottom 80%',scrub:1}});
    $$('.reveal').forEach(el=>gsap.fromTo(el,{y:22},{y:0,duration:.8,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 95%',once:true}}));
    if(quickbar)services.forEach((service,i)=>ScrollTrigger.create({trigger:service,start:'top 35%',end:'bottom 35%',onToggle:s=>{const link=$$('.quickbar-links a')[i];if(link)link.classList.toggle('active',s.isActive)}}));
   });
+ }
+
+ function gardenStory(tl,stage){
+  tl.fromTo($('.garden-lawn',stage),{opacity:.2},{opacity:1,duration:.35},0);
+  tl.fromTo($$('.garden-paver',stage),{y:-65,opacity:.25},{y:0,opacity:1,stagger:.008,duration:.18,ease:'power2.out'},.06);
+  tl.fromTo($$('.garden-plant',stage),{scaleY:.25,opacity:.35},{scaleY:1,opacity:1,stagger:.012,duration:.3,ease:'power2.out'},.3);
+  tl.fromTo($('.garden-specimen',stage),{scaleY:.45,opacity:.4},{scaleY:1,opacity:1,duration:.45,ease:'power2.out'},.36);
+  tl.fromTo($('.garden-finish',stage),{y:-40,opacity:0},{y:0,opacity:1,duration:.24,ease:'power2.out'},.76);
  }
  function roofStory(tl,stage){
   const deck=$('.roof-deck',stage),membrane=$('.roof-membrane',stage),courses=$$('.roof-course',stage),ridge=$('.roof-ridge',stage),flashing=$('.roof-flashing',stage);
@@ -115,6 +125,7 @@
   courses.forEach((row,i)=>tl.fromTo(row,{y:-270-i*4,x:35,opacity:.2},{y:0,x:0,opacity:1,duration:.19,ease:'power2.out'},.34+i*.043));
   tl.fromTo(ridge,{y:-340,opacity:.15},{y:0,opacity:1,duration:.18,ease:'power2.out'},.82);
   tl.fromTo(flashing,{opacity:0},{opacity:1,duration:.12},.88);
+  tl.fromTo($('.roof-finish',stage),{opacity:0},{opacity:1,duration:.08},.92);
   const labels=$$('.roof-legend span',stage);if(labels.length)labels.forEach((el,i)=>tl.to(el,{opacity:1,duration:.1},i*.25));
  }
  function reset(){if(ctx){ctx.revert();ctx=null}setup();if(button){button.textContent=enabled?'Ⅱ  Pause motion':'▷  Enable motion';button.setAttribute('aria-pressed',String(!enabled))}}

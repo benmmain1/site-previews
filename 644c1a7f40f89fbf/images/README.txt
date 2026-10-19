@@ -1,1 +1,1 @@
-Scene artwork is authored as inline SVG in index.html. Decorative illustrations do not represent completed client work.
+roof-house-v3.webp is an AI-generated architectural concept, not a client project photograph. It is reused through clipped material layers in the SVG assembly. See docs/GENERATED_TOOL_ASSETS.md for provenance and prompt.
