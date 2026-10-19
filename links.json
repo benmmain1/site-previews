@@ -1,70 +1,87 @@
 [
  {
+  "slug": "9e451561e414c85b",
   "name": "Good Day Plumbing",
-  "slug": "9e451561e414c85b"
+  "template": "plumber"
  },
  {
+  "slug": "0332264dbe843d99",
   "name": "Sean's Plumbing",
-  "slug": "0332264dbe843d99"
+  "template": "plumber"
  },
  {
+  "slug": "644c1a7f40f89fbf",
   "name": "Marvelous Roofs LLC",
-  "slug": "644c1a7f40f89fbf"
+  "template": "roofing"
  },
  {
+  "slug": "70b9930c6ae81a94",
   "name": "Water Heater Specialists LLC",
-  "slug": "70b9930c6ae81a94"
+  "template": "plumber"
  },
  {
+  "slug": "0990562d50a2f40b",
   "name": "JMC Property Maintenance INC",
-  "slug": "0990562d50a2f40b"
+  "template": "handyman"
  },
  {
-  "name": "Riverton Paint & Remodel",
-  "slug": "d98ad2fe45c261b7"
+  "slug": "c3f9711c6292ac5b",
+  "name": "Elite Electrical Service",
+  "template": "electric"
  },
  {
+  "slug": "8a48410e45d83070",
   "name": "2 friends handyman services",
-  "slug": "8a48410e45d83070"
+  "template": "handyman"
  },
  {
+  "slug": "06862aa5c420496a",
   "name": "Unique Tree Service",
-  "slug": "06862aa5c420496a"
+  "template": "tree-service"
  },
  {
+  "slug": "9af485a7f07f8f05",
   "name": "S&H Power Clean",
-  "slug": "9af485a7f07f8f05"
+  "template": "cleaning"
  },
  {
+  "slug": "12002173b9c9ddf5",
   "name": "Denning Heating & Air LLC",
-  "slug": "12002173b9c9ddf5"
+  "template": "hvac"
  },
  {
+  "slug": "ab8e4bfe0dbd90b5",
   "name": "Chill Heating and Air",
-  "slug": "ab8e4bfe0dbd90b5"
+  "template": "hvac"
  },
  {
+  "slug": "1757b5b0fcc592a0",
   "name": "Greenleaves Landscape",
-  "slug": "1757b5b0fcc592a0"
+  "template": "landscape"
  },
  {
+  "slug": "8606ef15d5406195",
   "name": "Magnolia's Cleaning House",
-  "slug": "8606ef15d5406195"
+  "template": "cleaning"
  },
  {
+  "slug": "450b3860cb4994be",
   "name": "Lakeside Plumbing Services LLC",
-  "slug": "450b3860cb4994be"
+  "template": "plumber"
  },
  {
+  "slug": "999ea81393faa03f",
   "name": "South Jordan Handyman",
-  "slug": "999ea81393faa03f"
+  "template": "handyman"
  },
  {
+  "slug": "0acce56b35da7743",
   "name": "T & N Handyman",
-  "slug": "0acce56b35da7743"
+  "template": "handyman"
  },
  {
+  "slug": "1d5a3ca7566afab3",
   "name": "Circuit Solutions Electrical Co",
-  "slug": "1d5a3ca7566afab3"
+  "template": "electric"
  }
 ]
