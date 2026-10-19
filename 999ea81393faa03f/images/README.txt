@@ -1,2 +1,2 @@
-Scene artwork is authored as inline SVG in index.html. Decorative illustrations do not represent completed client work.
+Decorative scenes use local concept imagery and/or inline SVG. They do not represent completed client work. See docs/GENERATED_MATERIALS_V4.md and docs/GENERATED_TOOL_ASSETS.md in the source repository for asset provenance and prompts.
 The three WebP tools are AI-generated transparent product cutouts, not client photos. See docs/GENERATED_TOOL_ASSETS.md in the source repository for provenance and prompts.

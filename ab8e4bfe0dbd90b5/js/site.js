@@ -9,6 +9,42 @@
  // The selector labels and target anchors come from actual content, not invented service names.
  const services=$$('.service');
  $$('.tool-cutout',hero).forEach((tool,i)=>{const service=services[i];if(service){tool.href='#'+service.id;tool.setAttribute('aria-label',service.querySelector('h3').textContent.trim());const slot=$(`[data-dock="${i}"]`);if(slot)slot.textContent=service.querySelector('h3').textContent.trim()}});
+
+ function connectPipe(){
+  const extension=$('.hero-pipe-extension'),continuation=$('.page-pipe-continuation');
+  if(!extension||!continuation)return;
+  const left=business==='lakeside plumbing services llc',heater=business==='water heater specialists llc';
+  const source=$(heater?'.plumbing-heater [data-outlet="heater"]':left?'.plumbing-general [data-outlet="left"]':'.plumbing-general [data-outlet="down"]',hero);
+  if(!source)return;
+  const scene=source.ownerSVGElement,matrix=source.getScreenCTM();if(!matrix)return;
+  const point=scene.createSVGPoint();point.x=Number(source.dataset.outletX);point.y=Number(source.dataset.outletY);
+  const actual=point.matrixTransform(matrix),box=hero.getBoundingClientRect(),main=continuation.parentElement,mainBox=main.getBoundingClientRect();
+  const sx=actual.x-box.left,sy=actual.y-box.top,width=box.width,height=box.height;
+  const diameter=Number(source.dataset.outletWidth)*Math.hypot(matrix.a,matrix.b),gutter=Math.max(14,diameter/2+6),tx=left?gutter:width-gutter;
+  const delta=Math.abs(tx-sx),radius=Math.max(4,Math.min(diameter*.9,delta/2.4,(height-sy-5)/2.4));
+  let route;
+  if(left){route=`M${sx} ${sy}H${tx+radius}Q${tx} ${sy} ${tx} ${sy+radius}V${height}`}
+  else{const y=sy+Math.max(4,diameter*.45);route=`M${sx} ${sy}V${y}Q${sx} ${y+radius} ${sx+radius} ${y+radius}H${tx-radius}Q${tx} ${y+radius} ${tx} ${y+2*radius}V${height}`}
+  const parent=hero.parentElement,from=parent.classList.contains('pin-spacer')?parent.getBoundingClientRect().bottom-mainBox.top:box.bottom-mainBox.top;
+  const fullHeight=main.offsetHeight;
+  for(const [el,d,h]of [[extension,route,height],[continuation,`M${tx} ${from}V${fullHeight-20}`,fullHeight]]){
+   el.setAttribute('viewBox',`0 0 ${width} ${h}`);
+   const gradient=$('linearGradient',el);gradient.setAttribute('x1',tx-diameter/2);gradient.setAttribute('x2',tx+diameter/2);gradient.setAttribute('y1','0');gradient.setAttribute('y2','0');
+   $$('.connected-shell,.connected-sheen,.connected-flow',el).forEach(path=>path.setAttribute('d',d));
+   $('.connected-shell',el).setAttribute('stroke-width',diameter);
+   $('.connected-sheen',el).setAttribute('stroke-width',Math.max(1,diameter*.045));
+   $('.connected-flow',el).setAttribute('stroke-width',Math.max(1.5,diameter*.09));
+   el.dataset.pipeDiameter=diameter;el.dataset.pipeX=tx;el.dataset.pipeStart=from;
+  }
+  const socket=$('.connected-socket',extension);socket.setAttribute('rx',diameter*.06);
+  socket.setAttribute('x',sx-diameter*(left?.22:.64));socket.setAttribute('y',sy-diameter*(left?.64:.22));socket.setAttribute('width',diameter*(left?.44:1.28));socket.setAttribute('height',diameter*(left?1.28:.44));
+  $('.connected-socket',continuation).setAttribute('display','none');
+  extension.dataset.sourceX=sx;extension.dataset.sourceY=sy;extension.dataset.pipeEnd=height;
+ }
+ if(window.ScrollTrigger)ScrollTrigger.addEventListener('refresh',connectPipe);
+ addEventListener('load',()=>requestAnimationFrame(connectPipe));addEventListener('resize',()=>requestAnimationFrame(connectPipe));
+ document.fonts.ready.then(()=>requestAnimationFrame(connectPipe));requestAnimationFrame(connectPipe);
+
  function setup(){
   if(!window.gsap||!window.ScrollTrigger||!enabled){root.classList.remove('js');return}
   root.classList.add('js');gsap.registerPlugin(ScrollTrigger);ScrollTrigger.config({ignoreMobileResize:true});
@@ -16,10 +52,9 @@
    const mobile=innerWidth<761;
    const longStory=['handyman','roofing','hvac','tree-service','landscape'].includes(kind);
    hero.style.setProperty('--pin-offset',mobile?Math.max(0,hero.offsetHeight-innerHeight)+'px':'0px');
-   const tl=gsap.timeline({defaults:{ease:'none'},scrollTrigger:{id:'hero-story',trigger:hero,start:()=>hero.offsetHeight>innerHeight+20?'bottom bottom':'top top',end:()=>'+='+innerHeight*(mobile?(longStory?1.15:.9):(longStory?1.7:1.25)),pin:true,scrub:.65,invalidateOnRefresh:true,onUpdate:s=>hero.style.setProperty('--progress',(10+s.progress*90)+'%')}});
+   const tl=gsap.timeline({defaults:{ease:'none'},scrollTrigger:{id:'hero-story',trigger:hero,start:()=>hero.offsetHeight>innerHeight+20?'bottom bottom':'top top',end:()=>'+='+innerHeight*(mobile?(longStory?.7:.55):(longStory?1:.75)),pin:true,scrub:.65,invalidateOnRefresh:true,onUpdate:s=>hero.style.setProperty('--progress',(10+s.progress*90)+'%')}});
 
-   const riser=$('.plumbing-continuation');
-   if(riser){const paths=$$('path',riser),pipe=$('.page-water',riser),link=$('.hero-riser',hero),left=business==='lakeside plumbing services llc';function fitPipe(){const main=riser.parentElement,height=main.offsetHeight,spacer=hero.parentElement,from=spacer.classList.contains('pin-spacer')?spacer.offsetTop+spacer.offsetHeight:hero.offsetTop+hero.offsetHeight,x=innerWidth<761?6:18;const d='M'+x+' '+Math.max(0,from-1)+'V'+(height-40);paths.forEach(p=>p.setAttribute('d',d));riser.querySelector('svg').setAttribute('viewBox','0 0 '+(innerWidth<761?13:39)+' '+height);if(link){const scene=business==='water heater specialists llc'?$('.plumbing-heater .scene',hero):$('.plumbing-general .scene',hero),pt=scene.createSVGPoint();pt.x=left?-50:810;pt.y=left?655:380;const pos=pt.matrixTransform(scene.getScreenCTM()),r=hero.getBoundingClientRect(),tx=left?(innerWidth<761?8:31):innerWidth-(innerWidth<761?8:31),ty=Math.max(160,Math.min(hero.offsetHeight-80,pos.y-r.top));link.setAttribute('viewBox','0 0 '+innerWidth+' '+hero.offsetHeight);$$('path',link).forEach(p=>p.setAttribute('d','M'+tx+' '+ty+'V'+hero.offsetHeight))}}fitPipe();ScrollTrigger.addEventListener('refresh',fitPipe);self.add(()=>()=>ScrollTrigger.removeEventListener('refresh',fitPipe));gsap.fromTo(pipe,{strokeDashoffset:0},{strokeDashoffset:-450,ease:'none',scrollTrigger:{trigger:riser.parentElement,start:'top top',end:'bottom bottom',scrub:.5}})}
+   if(kind==='plumber'){tl.eventCallback('onUpdate',connectPipe);tl.fromTo($('.hero-pipe-extension'),{opacity:0},{opacity:1,duration:.28},.66);gsap.to('.connected-flow',{strokeDashoffset:-450,ease:'none',scrollTrigger:{trigger:$('.page-pipe-continuation').parentElement,start:'top top',end:'bottom bottom',scrub:.6}})}
    const story=$('.scene-story i',hero);if(story)tl.fromTo(story,{scaleX:.08},{scaleX:1,duration:1},0);
    // Keep the business identity and calling action readable throughout the scene.
    tl.to($('.hero-copy',hero),{y:mobile?-8:-24,duration:1},0);
@@ -42,7 +77,7 @@
     tl.to(hammer,{xPercent:-10,yPercent:60,scale:.31,rotation:-38,duration:.18},.82);
     tl.to(drill,{xPercent:32,yPercent:44,scale:.32,rotation:0,duration:.18},.82);
     tl.to(roller,{xPercent:25,yPercent:57,scale:.33,rotation:25,duration:.18},.82);
-    tl.to($('.stage-caption',hero),{opacity:0,duration:.15},.75);
+    tl.to($('.stage-caption',hero),{opacity:0,duration:.15},.75);tl.fromTo($('.repair-photo-finish',hero),{opacity:0},{opacity:1,duration:.1},.9);
    }else if(kind==='roofing'){
     roofStory(tl,art);
    }else if(kind==='plumber'&&brand==='WH'&&business==='water heater specialists llc'){
@@ -77,18 +112,14 @@
     tl.to($$('.air-line',home),{strokeDashoffset:-150,duration:.6},.4);
     tl.to(hero,{backgroundImage:'linear-gradient(115deg,var(--paper) 38%,#e0decc 68%,#d5b18d)',duration:1},0);
    }else if(kind==='landscape'){
-    gardenStory(tl,art);
+    materialStory(tl,art);
    }else if(kind==='tree-service'){
     const trace=$('.tree-trace',hero),n=trace.getTotalLength();
     tl.fromTo(trace,{strokeDasharray:n,strokeDashoffset:n},{strokeDashoffset:0,duration:.85},.08);
     tl.fromTo($$('.tree-callout',hero),{opacity:0},{opacity:1,stagger:.24,duration:.22},.15);
-    tl.fromTo($('.tree-crown',hero),{opacity:.7},{opacity:1,duration:.9},.05);
+
    }else if(kind==='cleaning'){
-    const before=$('.clean-before',hero),blade=$('.squeegee',hero);
-    tl.fromTo(before,{clipPath:'inset(0 0 0 0)'},{clipPath:'inset(0 0 0 100%)',duration:.9},.03);
-    tl.fromTo(blade,{left:'0%',opacity:1},{left:'100%',opacity:1,duration:.9},.03);tl.to(blade,{opacity:0,duration:.06},.93);
-    tl.fromTo($$('.floating-bubble',hero),{y:35},{y:-110,stagger:.03,duration:.8},.05);
-    tl.fromTo($$('.sparkle',hero),{opacity:0,scale:.5},{opacity:1,scale:1,duration:.3},.65);
+    materialStory(tl,art);
    }else if(kind==='pressure-washing'){
     tl.fromTo($('.clean-wall',hero),{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)',duration:.9},0);
     tl.fromTo($('.spray',hero),{rotation:24,svgOrigin:'640 770',opacity:.1},{rotation:-15,svgOrigin:'640 770',opacity:1,duration:.85},.05);
@@ -98,19 +129,20 @@
    if(kind==='roofing'){
     const ft=gsap.timeline({scrollTrigger:{trigger:feature,start:'top 65%',end:'bottom 70%',scrub:.7}});roofStory(ft,detail);
    }else{
-    const scene=$('.scene',detail);if(scene)gsap.fromTo(scene,{y:15},{y:-25,ease:'none',scrollTrigger:{trigger:feature,start:'top bottom',end:'bottom top',scrub:1}});
+    const scene=$('.scene',detail);if(scene&&kind!=='tree-service')gsap.fromTo(scene,{y:15},{y:-25,ease:'none',scrollTrigger:{trigger:feature,start:'top bottom',end:'bottom top',scrub:1}});
    }
    if(kind==='plumber')gsap.to('.water-fill',{top:'15%',ease:'none',scrollTrigger:{trigger:feature,start:'top 75%',end:'bottom 40%',scrub:1}});
    if(kind==='electric')gsap.fromTo($$('.switch',detail),{opacity:.3},{opacity:1,stagger:.2,scrollTrigger:{trigger:feature,start:'top 70%',end:'bottom 85%',scrub:1}});
    if(kind==='hvac')gsap.fromTo($$('.warm-room',detail),{fill:'#b8d3d5'},{fill:'#e8bb83',stagger:.15,scrollTrigger:{trigger:feature,start:'top 70%',end:'bottom 60%',scrub:1}});
-   if(kind==='landscape'){const ft=gsap.timeline({scrollTrigger:{trigger:feature,start:'top 80%',end:'bottom 70%',scrub:.7}});gardenStory(ft,detail)}
-   if(kind==='cleaning'||kind==='handyman')gsap.fromTo($('.room-furniture',detail),{y:65,opacity:.4},{y:0,opacity:1,scrollTrigger:{trigger:feature,start:'top 70%',end:'bottom 90%',scrub:1}});
+   if(kind==='landscape'||kind==='cleaning'){const ft=gsap.timeline({scrollTrigger:{trigger:feature,start:'top 80%',end:'bottom 70%',scrub:.7}});materialStory(ft,detail)}
+   if(kind==='handyman')gsap.fromTo($('.room-furniture',detail),{y:65,opacity:.4},{y:0,opacity:1,scrollTrigger:{trigger:feature,start:'top 70%',end:'bottom 90%',scrub:1}});
    if(kind==='pressure-washing')gsap.fromTo($('.clean-wall',detail),{opacity:.15},{opacity:1,scrollTrigger:{trigger:feature,start:'top 80%',end:'bottom 80%',scrub:1}});
    $$('.reveal').forEach(el=>gsap.fromTo(el,{y:22},{y:0,duration:.8,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 95%',once:true}}));
    if(quickbar)services.forEach((service,i)=>ScrollTrigger.create({trigger:service,start:'top 35%',end:'bottom 35%',onToggle:s=>{const link=$$('.quickbar-links a')[i];if(link)link.classList.toggle('active',s.isActive)}}));
   });
  }
 
+ function materialStory(tl,stage){const plan=$('.material-plan',stage),scan=$('.material-scan',stage);if(plan)tl.fromTo(plan,{clipPath:'inset(0 0 0 72%)'},{clipPath:'inset(0 0 0 100%)',duration:.85},.1);if(scan)tl.fromTo(scan,{left:'72%',opacity:1},{left:'100%',opacity:0,duration:.85},.1)}
  function gardenStory(tl,stage){
   tl.fromTo($('.garden-lawn',stage),{opacity:.2},{opacity:1,duration:.35},0);
   tl.fromTo($$('.garden-paver',stage),{y:-65,opacity:.25},{y:0,opacity:1,stagger:.008,duration:.18,ease:'power2.out'},.06);
@@ -128,7 +160,7 @@
   tl.fromTo($('.roof-finish',stage),{opacity:0},{opacity:1,duration:.08},.92);
   const labels=$$('.roof-legend span',stage);if(labels.length)labels.forEach((el,i)=>tl.to(el,{opacity:1,duration:.1},i*.25));
  }
- function reset(){if(ctx){ctx.revert();ctx=null}setup();if(button){button.textContent=enabled?'Ⅱ  Pause motion':'▷  Enable motion';button.setAttribute('aria-pressed',String(!enabled))}}
+ function reset(){if(ctx){ctx.revert();ctx=null}setup();requestAnimationFrame(connectPipe);if(button){button.textContent=enabled?'Ⅱ  Pause motion':'▷  Enable motion';button.setAttribute('aria-pressed',String(!enabled))}}
  if(button)button.addEventListener('click',()=>{enabled=!enabled;reset()});
  reduce.addEventListener('change',()=>{enabled=!reduce.matches;reset()});
  let lastWidth=innerWidth,resizeTimer;
